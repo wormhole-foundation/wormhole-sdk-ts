@@ -1,3 +1,4 @@
+import { UniversalAddress } from "@wormhole-foundation/sdk-connect";
 import { XrplAddress, XrplZeroAddress } from "../../src/address.js";
 
 describe("XRPL Address Tests", () => {
@@ -70,7 +71,7 @@ describe("XRPL Address Tests", () => {
     expect(() => new XrplAddress("invalid")).toThrow("Invalid XRPL address");
   });
 
-  it("constructs from a UniversalAddress and round-trips", () => {
+  it("constructs from a zero-padded UniversalAddress and round-trips", () => {
     const universal = new XrplAddress(VALID_ADDRESS).toUniversalAddress();
     const address = new XrplAddress(universal);
     expect(address.format).toBe("account");
@@ -78,13 +79,27 @@ describe("XRPL Address Tests", () => {
     expect(address.toUniversalAddress().equals(universal)).toBe(true);
   });
 
-  it("throws when UniversalAddress is not a zero-padded account ID", () => {
-    // Non-zero bytes in the 12-byte padding region (e.g. an iou/mpt hash)
+  it("constructs from a UniversalAddress with a 'XRPL' prefix", () => {
+    const accountId = new XrplAddress(VALID_ADDRESS).toUint8Array(); // 20 bytes
+    // "XRPL" (4 bytes) + 8 reserved bytes + 20-byte account ID = 32 bytes
+    const prefixed = new Uint8Array(32);
+    prefixed.set(Buffer.from("XRPL", "ascii"), 0);
+    prefixed.set(accountId, 12);
+    const universal = new UniversalAddress(prefixed);
+
+    const address = new XrplAddress(universal);
+    expect(address.format).toBe("account");
+    expect(address.toString()).toBe(VALID_ADDRESS);
+  });
+
+  it("throws when UniversalAddress is not a recoverable account ID", () => {
+    // Leading bytes are neither all-zero padding nor the "XRPL" prefix
+    // (e.g. an iou/mpt sha256 hash)
     const nonAccount = new XrplAddress(
       "00EF0C086C1B25B6A159B32B05B9AE9BE1D6C960951A644F",
     ).toUniversalAddress();
     expect(() => new XrplAddress(nonAccount)).toThrow(
-      "UniversalAddress is not a zero-padded XRPL account ID",
+      "UniversalAddress is not a recoverable XRPL account ID",
     );
   });
 });

@@ -21,6 +21,12 @@ const IOU_HEX_CODE_REGEX = /^[A-Fa-f0-9]{40}$/;
 // Full MPT issuance ID: 48-char hex (24-byte Hash192)
 const MPT_ADDRESS_REGEX = /^[0-9a-fA-F]{48}$/;
 
+// A 20-byte XRPL account ID occupies the trailing 20 bytes of a 32-byte
+// UniversalAddress. The leading 12 bytes are either all-zero padding or a
+// 4-byte "XRPL" domain prefix followed by 8 reserved bytes.
+const XRPL_ACCOUNT_ID_LENGTH = 20;
+const XRPL_UA_PREFIX = encoding.bytes.encode("XRPL");
+
 // Encode a standard 3-char IOU code into 20 bytes using the XRPL canonical format:
 // bytes 0-11 = 0x00, bytes 12-14 = ASCII, bytes 15-19 = 0x00.
 // https://xrpl.org/docs/references/protocol/data-types/currency-formats
@@ -46,17 +52,24 @@ export class XrplAddress implements Address {
       this.address = xrplAddress.address;
       this.format = xrplAddress.format;
     } else if (UniversalAddress.instanceof(address)) {
-      // Only the "account" format is recoverable: its UniversalAddress is the
-      // 20-byte account ID left-zero-padded to 32 bytes. The "iou"/"mpt" forms
-      // are one-way sha256 hashes and cannot be reversed.
+      // Only the "account" format is recoverable: its UniversalAddress holds the
+      // 20-byte account ID in the trailing 20 bytes, with the leading 12 bytes
+      // being either all-zero padding or a 4-byte "XRPL" domain prefix followed
+      // by 8 reserved bytes. The "iou"/"mpt" forms are one-way sha256 hashes and
+      // cannot be reversed.
       const bytes = address.toUint8Array();
-      const padding = bytes.subarray(0, UniversalAddress.byteSize - 20);
-      if (padding.some((b) => b !== 0)) {
+      const prefix = bytes.subarray(0, UniversalAddress.byteSize - XRPL_ACCOUNT_ID_LENGTH);
+      const isZeroPadded = prefix.every((b) => b === 0);
+      const isXrplPrefixed = encoding.bytes.equals(
+        prefix.subarray(0, XRPL_UA_PREFIX.length),
+        XRPL_UA_PREFIX,
+      );
+      if (!isZeroPadded && !isXrplPrefixed) {
         throw new Error(
-          `UniversalAddress is not a zero-padded XRPL account ID: ${address.toString()}`,
+          `UniversalAddress is not a recoverable XRPL account ID: ${address.toString()}`,
         );
       }
-      const accountId = bytes.subarray(UniversalAddress.byteSize - 20);
+      const accountId = bytes.subarray(UniversalAddress.byteSize - XRPL_ACCOUNT_ID_LENGTH);
       this.address = encodeAccountID(Buffer.from(accountId));
       this.format = "account";
     } else if (typeof address === "string") {
