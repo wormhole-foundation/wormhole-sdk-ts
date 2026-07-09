@@ -34,30 +34,38 @@ export async function retry<T>(
 
   let retries = 0;
   return new Promise<T | null>((resolve, reject) => {
-    task().then((result) => {
-      if (result !== null) {
-        resolve(result);
-        return;
-      }
-
-      let intervalId = setInterval(async () => {
-        if (retries >= maxRetries) {
-          clearInterval(intervalId);
-          resolve(null);
+    task()
+      .then((result) => {
+        if (result !== null) {
+          resolve(result);
           return;
         }
 
-        const result = await task();
-        if (result !== null) {
-          clearInterval(intervalId);
-          resolve(result);
-        } else if (title) {
-          console.log(`Retrying ${title}, attempt ${retries}/${maxRetries} `);
-        }
+        let intervalId = setInterval(async () => {
+          if (retries >= maxRetries) {
+            clearInterval(intervalId);
+            resolve(null);
+            return;
+          }
 
-        retries++;
-      }, interval);
-    });
+          try {
+            const result = await task();
+            if (result !== null) {
+              clearInterval(intervalId);
+              resolve(result);
+            } else if (title) {
+              console.log(`Retrying ${title}, attempt ${retries}/${maxRetries} `);
+            }
+          } catch (e) {
+            clearInterval(intervalId);
+            reject(e);
+            return;
+          }
+
+          retries++;
+        }, interval);
+      })
+      .catch(reject);
   });
 }
 
