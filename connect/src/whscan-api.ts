@@ -181,13 +181,11 @@ export async function getVaaWithRetry<T extends PayloadLiteral | PayloadDiscrimi
   decodeAs: T,
   timeout: number,
 ): Promise<ReturnType<typeof deserialize<T>> | null> {
-  const task = () => getVaa(apiUrl, whm, decodeAs);
-  return await retry<ReturnType<typeof deserialize<T>>>(
-    task,
-    WHSCAN_RETRY_INTERVAL,
-    timeout,
-    "Wormholescan:GetVaaBytes",
-  );
+  // Deserialize outside of the retried task so a payload mismatch throws
+  // immediately instead of failing the poll on every attempt.
+  const vaaBytes = await getVaaBytesWithRetry(apiUrl, whm, timeout);
+  if (!vaaBytes) return null;
+  return deserialize(decodeAs, vaaBytes);
 }
 
 /**
