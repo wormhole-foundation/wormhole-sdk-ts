@@ -241,9 +241,9 @@ const explorerConfig = [[
       }
     ],
     [
-      "Arc", {
-        name: "Arc Explorer",
-        baseUrl: "https://arcscan.app/",
+      "Hydration", {
+        name: "Hydration Explorer",
+        baseUrl: "https://explorer.evm.hydration.cloud/",
         endpoints: {
           tx: "tx/",
           account: "address/"

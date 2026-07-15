@@ -44,6 +44,7 @@ const platformAndChainsEntries = [[
     "Tempo",
     "Nexus",
     "Arc",
+    "Hydration",
   ]], [
   "Solana", [
     "Solana",
