@@ -56,6 +56,7 @@ const rpcConfig = [[
     ["Tempo",       "https://rpc.tempo.xyz"],
     ["Nexus",       "https://mainnet.rpc.nexus.xyz"],
     ["Arc",         "https://rpc.arc.network"],
+    ["Hydration",   "https://rpc.coke.hydration.cloud"],
   ]], [
   "Testnet", [
     ["Bsc",             "https://data-seed-prebsc-1-s3.binance.org:8545"],

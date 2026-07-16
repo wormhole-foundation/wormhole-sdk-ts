@@ -250,6 +250,16 @@ const explorerConfig = [[
         }
       }
     ],
+    [
+      "Hydration", {
+        name: "Hydration Explorer",
+        baseUrl: "https://explorer.evm.hydration.cloud/",
+        endpoints: {
+          tx: "tx/",
+          account: "address/"
+        }
+      }
+    ],
   ]], [
   "Testnet", [[
     "Ethereum", {
