@@ -157,7 +157,7 @@ const blockTimeMilliseconds = [
   ["Tempo",             1_000],
   ["Nexus",             1_000],
   ["Arc",               1_000],
-  ["Arc",               30_000],
+  ["Hydration",        30_000],
 ] as const satisfies MapLevel<Chain, number>;
 
 /** The amount of time between block production, in milliseconds  */
