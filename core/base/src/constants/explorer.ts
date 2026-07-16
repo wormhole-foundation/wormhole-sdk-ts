@@ -253,10 +253,10 @@ const explorerConfig = [[
     [
       "Hydration", {
         name: "Hydration Explorer",
-        baseUrl: "https://explorer.evm.hydration.cloud/",
+        baseUrl: "https://hydration.subscan.io/",
         endpoints: {
           tx: "tx/",
-          account: "address/"
+          account: "account/"
         }
       }
     ],
