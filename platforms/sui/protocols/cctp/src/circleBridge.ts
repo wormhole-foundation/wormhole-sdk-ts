@@ -1,5 +1,5 @@
 import type { SuiGrpcClient } from "@mysten/sui/grpc";
-import { Transaction } from "@mysten/sui/transactions";
+import { coinWithBalance, Transaction } from "@mysten/sui/transactions";
 import { SuiPlatform, type SuiChains, SuiUnsignedTransaction } from "@wormhole-foundation/sdk-sui";
 import type {
   AccountAddress,
@@ -7,14 +7,10 @@ import type {
   ChainsConfig,
   Network,
   Platform,
-
   CircleTransferMessage,
-  Contracts} from "@wormhole-foundation/sdk-connect";
-import {
-  CircleBridge,
-  circle,
-  encoding,
+  Contracts,
 } from "@wormhole-foundation/sdk-connect";
+import { CircleBridge, circle, encoding } from "@wormhole-foundation/sdk-connect";
 
 import { suiCircleObjects } from "./objects.js";
 
@@ -68,25 +64,11 @@ export class SuiCircleBridge<N extends Network, C extends SuiChains> implements 
 
     const destinationDomain = circle.circleChainId.get(this.network, recipient.chain)!;
 
-    const [primaryCoin, ...mergeCoins] = await SuiPlatform.getCoins(
-      this.provider,
-      sender,
-      this.usdcId,
-    );
-
-    if (primaryCoin === undefined) {
-      throw new Error("No USDC in wallet");
-    }
-
-    const primaryCoinInput = tx.object(primaryCoin.coinObjectId);
-    if (mergeCoins.length > 0) {
-      tx.mergeCoins(
-        primaryCoinInput,
-        mergeCoins.map((coin) => tx.object(coin.coinObjectId)),
-      );
-    }
-
-    const [coin] = tx.splitCoins(primaryCoinInput, [amount]);
+    const coin = coinWithBalance({
+      balance: BigInt(amount),
+      type: this.usdcId,
+      useGasCoin: false,
+    });
 
     tx.moveCall({
       target: `${this.tokenMessengerId}::deposit_for_burn::deposit_for_burn`,
@@ -230,9 +212,7 @@ export class SuiCircleBridge<N extends Network, C extends SuiChains> implements 
     // (JSON-RPC returned number[]); decode accordingly.
     const rawMessage = (circleMessageSentEvent?.json as any).message;
     const circleMessage =
-      typeof rawMessage === "string"
-        ? encoding.b64.decode(rawMessage)
-        : new Uint8Array(rawMessage);
+      typeof rawMessage === "string" ? encoding.b64.decode(rawMessage) : new Uint8Array(rawMessage);
 
     const [msg, hash] = CircleBridge.deserialize(circleMessage);
     const { payload: body } = msg;
