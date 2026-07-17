@@ -37,6 +37,7 @@ export const executorContracts = [[
     ["Tempo",           "0xA3640464E5543182E5F587f346B6Ac1E604d1625"],
     ["Nexus",           "0x3370b6462012a5cAEc48b2707641617A7Ce0Bb27"],
     ["Arc",             "0xCD6b0d9635862e715FD8e2df335f8D0fF20Bb798"],
+    ["Hydration",       "0xd633d8d1ceee8c8252196d44857c0f41b8dcb0d9"]
   ]], [
   "Testnet", [
     ["Aptos",           "0x139717c339f08af674be77143507a905aa28cbc67a0e53e7095c07b630d73815"],
