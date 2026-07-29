@@ -6,3 +6,15 @@ import { secp256k1 } from "@noble/curves/secp256k1";
 import { ed25519 } from "@noble/curves/ed25519";
 
 export { keccak_256 as keccak256, sha3_256, sha256, sha512_256, secp256k1, ed25519 };
+
+const g = typeof globalThis !== "undefined"
+  ? globalThis
+  : typeof window !== "undefined"
+    ? window
+    : typeof global !== "undefined"
+      ? global
+      : {} as any;
+
+export const makeGlobalFactory = (name: string, initialValue: any) => {
+  return g[`__wormhole_${name}`] ??= initialValue;
+}
