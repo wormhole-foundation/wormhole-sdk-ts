@@ -53,6 +53,7 @@ const chainIdAndChainEntries = [
   [   68, "Tempo"          ],
   [   69, "Nexus"          ],
   [   71, "Arc"            ],
+  [   72, "Robinhood"      ],
   [   73, "Hydration"      ],
   [ 3104, "Wormchain"      ],
   [ 4000, "Cosmoshub"      ],

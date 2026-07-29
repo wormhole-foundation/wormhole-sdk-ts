@@ -62,6 +62,7 @@ const chainNetworkNativeChainIdEntries = [
       ["Tempo",       4217n],
       ["Nexus",       3946n],
       ["Arc",         5042n],
+      ["Robinhood",   4663n],
       ["Hydration",   222222n],
       ["Btc",         "bitcoin-mainnet"]
     ],

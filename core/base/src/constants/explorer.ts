@@ -251,6 +251,16 @@ const explorerConfig = [[
       }
     ],
     [
+      "Robinhood", {
+        name: "Robinhood Chain Explorer",
+        baseUrl: "https://robinhoodchain.blockscout.com/",
+        endpoints: {
+          tx: "tx/",
+          account: "address/"
+        }
+      }
+    ],
+    [
       "Hydration", {
         name: "Hydration Explorer",
         baseUrl: "https://hydration.subscan.io/",
