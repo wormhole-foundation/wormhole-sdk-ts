@@ -30,7 +30,7 @@ export const relayerContracts = [[
     ["Polygon",         "0x0591C25ebd0580E0d4F27A82Fc2e24E7489CB5e0"],
     ["Avalanche",       "0xA3cF45939bD6260bcFe3D66bc73d60f19e49a8BB"],
     ["Celo",            "0x306B68267Deb7c5DfCDa3619E22E9Ca39C374f84"],
-    ["Seievm",          "0x362fca37E45fe1096b42021b543f462D49a5C8df"],
+    ["Seievm",          "0x595712bA7e4882af338d60ae37058082a5d0331A"],
     ["Moonbeam",        "0x0591C25ebd0580E0d4F27A82Fc2e24E7489CB5e0"],
     ["Arbitrum",        "0xAd753479354283eEE1b86c9470c84D42f229FF43"],
     ["Optimism",        "0x01A957A525a5b7A72808bA9D10c389674E459891"],
