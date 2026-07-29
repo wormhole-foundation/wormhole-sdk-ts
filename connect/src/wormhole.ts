@@ -422,6 +422,9 @@ export class Wormhole<N extends Network> {
   }
 
   async getExecutorCapabilities(): Promise<CapabilitiesResponse> {
+    if (this.config.executor?.getCapabilities) {
+      return await this.config.executor.getCapabilities(this._network);
+    }
     return await fetchCapabilities(this.config.executorAPI);
   }
 
