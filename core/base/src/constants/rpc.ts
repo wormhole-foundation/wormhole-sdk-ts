@@ -56,6 +56,7 @@ const rpcConfig = [[
     ["Tempo",       "https://rpc.tempo.xyz"],
     ["Nexus",       "https://mainnet.rpc.nexus.xyz"],
     ["Arc",         "https://rpc.arc.network"],
+    ["Robinhood",   "https://rpc.mainnet.chain.robinhood.com"],
     ["Hydration",   "https://rpc.coke.hydration.cloud"],
   ]], [
   "Testnet", [

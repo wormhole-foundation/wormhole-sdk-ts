@@ -44,6 +44,7 @@ export const coreBridgeContracts = [[
     ["Nexus",       "0xC8aD24fC6063c41cB5C12a8e3851AafC3b3CF027"],
     ["Tempo",       "0xbebdb6C8ddC678FfA9f8748f85C815C556Dd8ac6"],
     ["Arc",         "0xC8aD24fC6063c41cB5C12a8e3851AafC3b3CF027"],
+    ["Robinhood",   "0x141fBa8AD5D61bdaB45A047cF60b5Ad9784987FB"],
     ["Hydration",   "0x3792a6d63c31941B2805181771795D9176fA82A1"]
   ]], [
   "Testnet", [

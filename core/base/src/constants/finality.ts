@@ -78,7 +78,8 @@ const finalityThresholds = [
   ["Tempo",      1],
   ["Nexus",      1],
   ["Arc",        1],
-  ["Hydration",  5], // Inferred from Polkadot 
+  ["Robinhood",  4096], // ~100ms blocks; matches other sub-second L2s (Converge, MegaETH)
+  ["Hydration",  5], // Inferred from Polkadot
   // Testnets
   ["Sepolia", 72],
   ["ArbitrumSepolia", 4096],
@@ -157,6 +158,7 @@ const blockTimeMilliseconds = [
   ["Tempo",             1_000],
   ["Nexus",             1_000],
   ["Arc",               1_000],
+  ["Robinhood",           100],
   ["Hydration",        30_000],
 ] as const satisfies MapLevel<Chain, number>;
 
