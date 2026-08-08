@@ -331,6 +331,6 @@ export const deserializeUnknownVaa = (data: Uint8Array) => {
   return {
     ...header,
     ...envelope,
-    payload: data.slice(offset2),
+    payload: data.slice(offset + offset2),
   };
 };
