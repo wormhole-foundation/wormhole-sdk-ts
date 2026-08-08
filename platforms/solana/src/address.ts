@@ -24,7 +24,11 @@ export class SolanaAddress implements Address {
       this.address = address.address;
     } else if (UniversalAddress.instanceof(address)) {
       this.address = new PublicKey(address.toUint8Array());
-    } else if (typeof address === 'string' && encoding.hex.valid(address)) {
+    } else if (
+      typeof address === 'string' &&
+      encoding.hex.valid(address) &&
+      (address.startsWith('0x') || address.length === 64)
+    ) {
       this.address = new PublicKey(encoding.hex.decode(address));
     } else {
       this.address = new PublicKey(address);
