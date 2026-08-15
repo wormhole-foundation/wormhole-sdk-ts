@@ -263,9 +263,9 @@ const explorerConfig = [[
     [
       "Hydration", {
         name: "Hydration Explorer",
-        baseUrl: "https://hydration.subscan.io/",
+        baseUrl: "https://hydration-explorer.neckwork.net/",
         endpoints: {
-          tx: "tx/",
+          tx: "extrinsic/",
           account: "account/"
         }
       }
