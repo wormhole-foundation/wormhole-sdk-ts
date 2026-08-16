@@ -57,7 +57,7 @@ const rpcConfig = [[
     ["Nexus",       "https://mainnet.rpc.nexus.xyz"],
     ["Arc",         "https://rpc.arc.network"],
     ["Robinhood",   "https://rpc.mainnet.chain.robinhood.com"],
-    ["Hydration",   "https://rpc.coke.hydration.cloud"],
+    ["Hydration",   "https://hydration-rpc.n.dwellir.com"],
   ]], [
   "Testnet", [
     ["Bsc",             "https://data-seed-prebsc-1-s3.binance.org:8545"],
