@@ -493,6 +493,16 @@ const explorerConfig = [[
         }
       }
     ],
+    [
+      "Robinhood", {
+        name: "Robinhood Chain Testnet Explorer",
+        baseUrl: "https://explorer.testnet.chain.robinhood.com/",
+        endpoints: {
+          tx: "tx/",
+          account: "address/"
+        }
+      }
+    ],
   ]],
 ] as const satisfies MapLevels<["Mainnet" | "Testnet", Chain, ExplorerSettings]>;
 

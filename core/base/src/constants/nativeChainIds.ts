@@ -126,7 +126,8 @@ const chainNetworkNativeChainIdEntries = [
       ["ZeroGravity",     16602n],
       ["Tempo",           42431n],
       ["Nexus",           3945n],
-      ["Arc",             5042002n]
+      ["Arc",             5042002n],
+      ["Robinhood",       46630n],
     ],
   ],
   [

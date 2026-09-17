@@ -105,6 +105,7 @@ const rpcConfig = [[
     ["Tempo",           "https://rpc.moderato.tempo.xyz"],
     ["Nexus",           "https://testnet.rpc.nexus.xyz"],
     ["Arc",             "https://rpc.testnet.arc.network"],
+    ["Robinhood",       "https://rpc.testnet.chain.robinhood.com/rpc"],
   ]], [
   "Devnet", [
     ["Ethereum",  "http://eth-devnet:8545"],
