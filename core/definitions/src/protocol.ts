@@ -4,6 +4,7 @@ import type { Contracts } from "./contracts.js";
 import type { WormholeRegistry } from "./registry.js";
 import type { RpcConnection } from "./rpc.js";
 import type { ChainsConfig } from "./types.js";
+import { makeGlobalFactory } from "./utils.js";
 
 /**
  *  A string type representing the name of a protocol
@@ -90,7 +91,8 @@ export type ProtocolInstance<
 
 // Runtime registry of protocol implementations from which we can initialize the
 // protocol client
-const protocolFactory: ProtocolImplementationMap = {};
+
+const protocolFactory: ProtocolImplementationMap = makeGlobalFactory('protocolFactory', {});
 
 /** registerProtocol sets the Platform specific implementation of a given Protocol interface  */
 export function registerProtocol<
@@ -103,11 +105,11 @@ export function registerProtocol<
     PlatformToChains<P>
   >,
 >(platform: P, protocol: PN, ctr: PI): void {
-  if (!(protocol in protocolFactory)) protocolFactory[protocol] = {};
+  if (!(protocol in protocolFactory)) protocolFactory[protocol] = {} as any;
 
   const platforms = protocolFactory[protocol]!;
   if (platform in platforms)
-    throw new Error(`Protocol ${platform} for protocol ${protocol} has already registered`);
+    console.warn(`Protocol ${protocol} for platform ${platform} was already registered. Overwriting it.`);
 
   protocolFactory[protocol]![platform] = ctr;
 }
