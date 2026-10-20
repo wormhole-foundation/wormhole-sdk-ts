@@ -78,7 +78,7 @@ const finalityThresholds = [
   ["Tempo",      1],
   ["Nexus",      1],
   ["Arc",        1],
-  ["Robinhood",  4096], // ~100ms blocks; matches other sub-second L2s (Converge, MegaETH)
+  ["Robinhood",  10000], // finalized VAAs are signed ~1000s after the message (Wormholescan); ~100ms blocks
   ["Hydration",  5], // Inferred from Polkadot
   // Testnets
   ["Sepolia", 72],
