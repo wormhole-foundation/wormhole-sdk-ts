@@ -80,6 +80,7 @@ const finalityThresholds = [
   ["Arc",        1],
   ["Robinhood",  4096], // ~100ms blocks; matches other sub-second L2s (Converge, MegaETH)
   ["Hydration",  5], // Inferred from Polkadot
+  ["Elysium",    4096], // Arbitrum Orbit (AnyTrust) settling to HyperEVM; matches other Orbit chains (Robinhood, Converge, Plume)
   // Testnets
   ["Sepolia", 72],
   ["ArbitrumSepolia", 4096],
@@ -160,6 +161,7 @@ const blockTimeMilliseconds = [
   ["Arc",               1_000],
   ["Robinhood",           100],
   ["Hydration",        30_000],
+  ["Elysium",             200], // docs: 100-200ms blocks
 ] as const satisfies MapLevel<Chain, number>;
 
 /** The amount of time between block production, in milliseconds  */

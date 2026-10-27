@@ -46,6 +46,7 @@ const platformAndChainsEntries = [[
     "Arc",
     "Robinhood",
     "Hydration",
+    "Elysium",
   ]], [
   "Solana", [
     "Solana",
