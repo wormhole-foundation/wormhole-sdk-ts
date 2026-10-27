@@ -13,14 +13,18 @@ import "@wormhole-foundation/sdk-aptos-tokenbridge";
 
 import { APTOS_COIN, AptosChains, AptosPlatform } from "./../../src/index.js";
 
+import { Aptos, AptosConfig, Network as AptosNetwork } from "@aptos-labs/ts-sdk";
+import type { Client, ClientRequest, ClientResponse } from "@aptos-labs/ts-sdk";
+
 import { describe, expect, test } from "@jest/globals";
 
+import https from "https";
 import nock from "nock";
 import path from "path";
 import { fileURLToPath } from "url";
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
-const network: "Testnet" = "Testnet";
+const network: "Mainnet" = "Mainnet";
 type TNet = typeof network;
 const configs = CONFIG[network].chains;
 
@@ -28,7 +32,7 @@ const TOKEN_ADDRESSES = {
   Mainnet: {
     Aptos: {
       waptos: APTOS_COIN,
-      wavax: "0xbe8f4301c0b54e870902b9a23eeb95ce74ac190531782aa3262337ceb145401a::coin::T",
+      wsol: "0xdd89c0e695df0692205912fb69fc290418bed0dbe6e4573d744a6d5e6bab6c13::coin::T",
     },
   },
 };
@@ -36,15 +40,60 @@ const TOKEN_ADDRESSES = {
 const senderAddress = utils.makeNativeAddress("Aptos");
 const bogusAddress = utils.makeNativeAddress("Aptos");
 const realNativeAddress = toNative("Aptos", TOKEN_ADDRESSES["Mainnet"]["Aptos"]["waptos"]);
-const realWrappedAddress = toNative("Aptos", TOKEN_ADDRESSES["Mainnet"]["Aptos"]["wavax"]);
+const realWrappedAddress = toNative("Aptos", TOKEN_ADDRESSES["Mainnet"]["Aptos"]["wsol"]);
+
+// The default Aptos client (@aptos-labs/aptos-client) always uses HTTP/2, which nock
+// cannot intercept, so requests would bypass the fixtures and hit the live node.
+// This client issues the same requests over HTTP/1 so nock can record and replay them.
+const http1Client: Client = {
+  provider<Req, Res>({ url, method, params, headers, body }: ClientRequest<Req>) {
+    const target = new URL(url);
+    for (const [key, value] of Object.entries(params ?? {}))
+      if (value !== undefined) target.searchParams.set(key, String(value));
+
+    const payload =
+      body === undefined
+        ? undefined
+        : body instanceof Uint8Array
+          ? Buffer.from(body)
+          : Buffer.from(JSON.stringify(body));
+
+    const reqHeaders = Object.fromEntries(
+      Object.entries(headers ?? {}).filter(([, value]) => value !== undefined),
+    ) as Record<string, string>;
+
+    return new Promise<ClientResponse<Res>>((resolve, reject) => {
+      const req = https.request(target, { method, headers: reqHeaders }, (res) => {
+        const chunks: Buffer[] = [];
+        res.on("data", (chunk: Buffer) => chunks.push(chunk));
+        res.on("error", reject);
+        res.on("end", () => {
+          const raw = Buffer.concat(chunks);
+          const isJson = (res.headers["content-type"] ?? "").includes("json");
+          resolve({
+            status: res.statusCode ?? 0,
+            statusText: res.statusMessage ?? "",
+            data: (isJson && raw.length > 0 ? JSON.parse(raw.toString()) : raw) as Res,
+            headers: res.headers,
+            response: res,
+          });
+        });
+      });
+      req.on("error", reject);
+      if (payload) req.write(payload);
+      req.end();
+    });
+  },
+};
 
 // Setup nock to record fixtures
 const nockBack = nock.back;
-nockBack.fixtures = __dirname ?? path.resolve() + "/__tests__/integration/fixtures";
+nockBack.fixtures = path.join(__dirname, "fixtures");
 
 let nockDone: () => void;
 beforeEach(async () => {
-  nockBack.setMode("lockdown");
+  // Re-record fixtures against the live node with NOCK_BACK_MODE=record
+  nockBack.setMode((process.env["NOCK_BACK_MODE"] as nock.BackMode | undefined) ?? "lockdown");
   const fullTestName = expect.getState().currentTestName?.replace(/\s/g, "_");
   const { nockDone: nd } = await nockBack(`${fullTestName}.json`);
   // update global var
@@ -62,7 +111,13 @@ describe("TokenBridge Tests", () => {
   let tb: TokenBridge<TNet, AptosChains>;
 
   test("Create TokenBridge", async () => {
-    const rpc = p.getRpc("Aptos");
+    const rpc = new Aptos(
+      new AptosConfig({
+        fullnode: configs.Aptos!.rpc,
+        network: AptosNetwork.MAINNET,
+        client: http1Client,
+      }),
+    );
     tb = await p.getProtocol("TokenBridge", rpc);
     expect(tb).toBeTruthy();
   });
@@ -96,7 +151,7 @@ describe("TokenBridge Tests", () => {
 
       test("Real Wrapped", async () => {
         const orig = await tb.getOriginalAsset(realWrappedAddress);
-        expect(orig.chain).toEqual("Avalanche");
+        expect(orig.chain).toEqual("Solana");
         expect(orig).toBeTruthy();
       });
     });
