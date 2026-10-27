@@ -64,6 +64,7 @@ const chainNetworkNativeChainIdEntries = [
       ["Arc",         5042n],
       ["Robinhood",   4663n],
       ["Hydration",   222222n],
+      ["Elysium",     99901n],
       ["Btc",         "bitcoin-mainnet"]
     ],
   ],

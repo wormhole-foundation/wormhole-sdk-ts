@@ -1,18 +1,18 @@
 [
     {
-        "scope": "https://fullnode.testnet.aptoslabs.com:443",
+        "scope": "https://fullnode.mainnet.aptoslabs.com:443",
         "method": "GET",
-        "path": "/v1/accounts/0xbe8f4301c0b54e870902b9a23eeb95ce74ac190531782aa3262337ceb145401a/resource/0x576410486a2da45eee6c949c995670112ddf2fbeedab20350d506328eefc9d4f::state::OriginInfo",
+        "path": "/v1/accounts/0xdd89c0e695df0692205912fb69fc290418bed0dbe6e4573d744a6d5e6bab6c13/resource/0x576410486a2da45eee6c949c995670112ddf2fbeedab20350d506328eefc9d4f::state::OriginInfo",
         "body": "",
         "status": 200,
         "response": {
             "type": "0x576410486a2da45eee6c949c995670112ddf2fbeedab20350d506328eefc9d4f::state::OriginInfo",
             "data": {
                 "token_address": {
-                    "external_address": "0x000000000000000000000000d00ae08403b9bbb9124bb305c09058e32c39a48c"
+                    "external_address": "0x069b8857feab8184fb687f634618c035dac439dc1aeb3b5598a0f00000000001"
                 },
                 "token_chain": {
-                    "number": "6"
+                    "number": "1"
                 }
             }
         },
@@ -20,29 +20,33 @@
             "content-type",
             "application/json; charset=utf-8",
             "x-aptos-chain-id",
-            "2",
+            "1",
             "x-aptos-ledger-version",
-            "768224080",
+            "7788753693",
             "x-aptos-ledger-oldest-version",
-            "0",
+            "7638953697",
             "x-aptos-ledger-timestampusec",
-            "1699898998147697",
+            "1793113016718877",
             "x-aptos-epoch",
-            "10332",
+            "17781",
             "x-aptos-block-height",
-            "167660318",
+            "1142739102",
             "x-aptos-oldest-block-height",
-            "0",
-            "content-length",
+            "1116822148",
+            "x-aptos-txn-encryption-key",
+            "60a48f7c447ba61defb2ad3b955a4f8ddbb4a1a2810479f70e337876d18e0e5ee54d9b7789fb016731821d27f7abab5cfc0ff957917fa49998fe18bcfe2e6ef929153307a316c502b3ab06ccd1b981de6e0834f30f5c03a96d3af6cc63a0f8a4e560a89a160bf8a10a609037f0329c2aeaed1f7ddaff845a524c62113aa1e49c376b6a5a6326e6f589bcd2a2384b938a160f186835068839d4d041edd7a8df1c400b6f506f2f07b27f387353de651b87e6f990afb9c2cfc5ba41affb5cef9e8d113b",
+            "Content-Length",
             "240",
             "date",
-            "Mon, 13 Nov 2023 18:09:58 GMT",
-            "Via",
+            "Tue, 27 Oct 2026 14:56:56 GMT",
+            "vary",
+            "origin, access-control-request-method, access-control-request-headers",
+            "access-control-allow-credentials",
+            "true",
+            "via",
             "1.1 google",
             "Alt-Svc",
-            "h3=\":443\"; ma=2592000,h3-29=\":443\"; ma=2592000",
-            "Connection",
-            "close"
+            "h3=\":443\"; ma=2592000"
         ],
         "responseIsBinary": false
     }

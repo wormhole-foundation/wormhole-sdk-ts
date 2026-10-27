@@ -38,7 +38,8 @@ export const executorContracts = [[
     ["Nexus",           "0x3370b6462012a5cAEc48b2707641617A7Ce0Bb27"],
     ["Arc",             "0xCD6b0d9635862e715FD8e2df335f8D0fF20Bb798"],
     ["Robinhood",       "0xd19aAd5a69F7D35Cee169D9D90e1BbCB795ABB38"],
-    ["Hydration",       "0xd633d8d1ceee8c8252196d44857c0f41b8dcb0d9"]
+    ["Hydration",       "0xd633d8d1ceee8c8252196d44857c0f41b8dcb0d9"],
+    ["Elysium",         "0x919BB0d1368C1E61dcB4d351258bDd2D1D43a4Bc"]
   ]], [
   "Testnet", [
     ["Aptos",           "0x139717c339f08af674be77143507a905aa28cbc67a0e53e7095c07b630d73815"],

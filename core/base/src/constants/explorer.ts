@@ -270,6 +270,16 @@ const explorerConfig = [[
         }
       }
     ],
+    [
+      "Elysium", {
+        name: "Elysium Explorer",
+        baseUrl: "https://elysium.kinetiq.xyz/",
+        endpoints: {
+          tx: "tx/",
+          account: "address/"
+        }
+      }
+    ],
   ]], [
   "Testnet", [[
     "Ethereum", {
