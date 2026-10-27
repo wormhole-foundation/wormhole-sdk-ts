@@ -374,7 +374,7 @@ export class SolanaWormholeCore<N extends Network, C extends SolanaChains>
   async parseTransaction(txid: string): Promise<WormholeMessageId[]> {
     const response: VersionedTransactionResponse | null =
       await this.connection.getTransaction(txid, {
-        maxSupportedTransactionVersion: 0,
+        maxSupportedTransactionVersion: 1,
       });
 
     if (!response || !response.meta || !response.meta.innerInstructions)
@@ -425,7 +425,7 @@ export class SolanaWormholeCore<N extends Network, C extends SolanaChains>
   async parseMessages(txid: string) {
     const response: VersionedTransactionResponse | null =
       await this.connection.getTransaction(txid, {
-        maxSupportedTransactionVersion: 0,
+        maxSupportedTransactionVersion: 1,
       });
 
     if (!response || !response.meta || !response.meta.innerInstructions)
