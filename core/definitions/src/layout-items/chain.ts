@@ -8,6 +8,9 @@ import { chainToChainId, chains, toChain } from "@wormhole-foundation/sdk-base";
 
 const chainItemBase = { binary: "uint", size: 2 } as const;
 
+type DontExpandAllChains<C> =
+  C extends typeof chains ? Chain : C extends Chain[] ? C[number] : never;
+
 type AllowNull<T, B extends boolean> = B extends true ? T | null : T;
 
 export const chainItem = <
@@ -20,12 +23,12 @@ export const chainItem = <
   ({
     ...chainItemBase,
     custom: {
-      to: (val: number): AllowNull<C[number], N> => {
+      to: (val: number): AllowNull<DontExpandAllChains<C>, N> => {
         if (val === 0) {
           if (!opts?.allowNull)
             throw new Error("ChainId 0 is not valid for this protocol and action");
 
-          return null as AllowNull<C[number], N>;
+          return null as AllowNull<DontExpandAllChains<C>, N>;
         }
 
         const chain = toChain(val);
@@ -33,7 +36,7 @@ export const chainItem = <
         if (!allowedChains.includes(chain))
           throw new Error(`Chain ${chain} not in allowed chains ${allowedChains}`);
 
-        return chain;
+        return chain as DontExpandAllChains<C>;
       },
       from: (val: AllowNull<C[number], N>): number => (val == null ? 0 : chainToChainId(val)),
     } satisfies CustomConversion<number, AllowNull<C[number], N>>,
