@@ -13,7 +13,7 @@ import evm from "@wormhole-foundation/sdk/evm";
   const gset = await core.getGuardianSet(index);
 
   const vaa = await wh.getVaa(
-    "07D6A246859FAB4A93FFF2AE1F3B4CB794754226560F3886BE01A39F3204E148",
+    { chain: "Ethereum", txid: "07D6A246859FAB4A93FFF2AE1F3B4CB794754226560F3886BE01A39F3204E148" },
     "Uint8Array",
   );
 
