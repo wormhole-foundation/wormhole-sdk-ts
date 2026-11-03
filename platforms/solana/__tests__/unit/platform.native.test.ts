@@ -75,7 +75,7 @@ describe('Solana native token identification', () => {
     expect(
       SolanaPlatform.isNativeTokenId(
         'Mainnet',
-        'Ethereum',
+        'Ethereum' as never,
         nativeTokenId('Ethereum'),
       ),
     ).toBe(false);
@@ -84,15 +84,18 @@ describe('Solana native token identification', () => {
     ).toThrow('invalid chain');
   });
 
-  test('preserves the chain for the other supported Solana platform chain', () => {
-    const token = SolanaPlatform.nativeTokenId('Mainnet', 'Pythnet');
-    expect(token.chain).toBe('Pythnet');
-    expect(token.address.toString()).toBe(SolanaZeroAddress);
-    expect(SolanaPlatform.isNativeTokenId('Mainnet', 'Pythnet', token)).toBe(
-      true,
-    );
-    expect(SolanaPlatform.isNativeTokenId('Mainnet', 'Solana', token)).toBe(
-      false,
-    );
-  });
+  test.each(['Pythnet', 'Fogo'] as const)(
+    'preserves the chain for %s',
+    (chain) => {
+      const token = SolanaPlatform.nativeTokenId('Mainnet', chain);
+      expect(token.chain).toBe(chain);
+      expect(token.address.toString()).toBe(SolanaZeroAddress);
+      expect(SolanaPlatform.isNativeTokenId('Mainnet', chain, token)).toBe(
+        true,
+      );
+      expect(SolanaPlatform.isNativeTokenId('Mainnet', 'Solana', token)).toBe(
+        false,
+      );
+    },
+  );
 });
