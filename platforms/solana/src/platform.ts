@@ -10,7 +10,6 @@ import type {
 } from '@wormhole-foundation/sdk-connect';
 import {
   PlatformContext,
-  Wormhole,
   chainToPlatform,
   decimals,
   nativeChainIds,
@@ -88,7 +87,12 @@ export class SolanaPlatform<N extends Network>
   ): TokenId<C> {
     if (!SolanaPlatform.isSupportedChain(chain))
       throw new Error(`invalid chain: ${chain}`);
-    return Wormhole.chainAddress(chain, SolanaZeroAddress);
+    return {
+      chain,
+      address: new SolanaAddress(new PublicKey(SolanaZeroAddress))
+        .toUniversalAddress()
+        .toNative(chain),
+    };
   }
 
   static isNativeTokenId<N extends Network, C extends SolanaChains>(
@@ -98,8 +102,14 @@ export class SolanaPlatform<N extends Network>
   ): boolean {
     if (!this.isSupportedChain(chain)) return false;
     if (tokenId.chain !== chain) return false;
-    const native = this.nativeTokenId(network, chain);
-    return native == tokenId;
+    if (isNative(tokenId.address)) return true;
+    return tokenId.address
+      .toUniversalAddress()
+      .equals(
+        new SolanaAddress(
+          new PublicKey(SolanaZeroAddress),
+        ).toUniversalAddress(),
+      );
   }
 
   static isSupportedChain(chain: Chain): boolean {
