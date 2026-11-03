@@ -276,8 +276,7 @@ export class SolanaPlatform<N extends Network>
   }
 
   static async getLatestFinalizedBlock(rpc: Connection): Promise<number> {
-    const { lastValidBlockHeight } = await this.latestBlock(rpc, 'finalized');
-    return lastValidBlockHeight;
+    return rpc.getSlot('finalized');
   }
 
   static chainFromChainId(genesisHash: string): [Network, SolanaChains] {
