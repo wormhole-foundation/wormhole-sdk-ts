@@ -271,6 +271,10 @@ export class AutomaticPorticoRoute<N extends Network>
   }
 
   async initiate(request: RouteTransferRequest<N>, sender: Signer<N>, quote: Q, to: ChainAddress) {
+    if (quote.expires && quote.expires.getTime() <= Date.now()) {
+      throw new Error("Quote has expired, please request a new quote");
+    }
+
     const { params, details } = quote;
 
     const sourceToken = request.source.id.address;
