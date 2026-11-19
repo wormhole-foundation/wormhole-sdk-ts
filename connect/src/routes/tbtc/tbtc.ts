@@ -60,6 +60,11 @@ type QR = QuoteResult<Op, Vp>;
 type Q = Quote<Op, Vp>;
 type R = TransferReceipt<AttestationReceipt<"TBTCBridge">>;
 
+// Chains where Threshold has deprecated tBTC. They are exit-only: holders can still
+// burn canonical tBTC through the gateway (or send Wormhole-wrapped tBTC through the
+// token bridge) to leave, but they are not offered as tBTC destinations.
+const EXIT_ONLY_CHAINS: readonly Chain[] = ["Optimism", "Polygon"];
+
 export class TBTCRoute<N extends Network>
   extends ManualRoute<N>
   implements StaticRouteMethods<typeof TBTCRoute>
@@ -81,6 +86,10 @@ export class TBTCRoute<N extends Network>
     fromChain: ChainContext<N>,
     toChain: ChainContext<N>,
   ): Promise<TokenId[]> {
+    if (TBTCRoute.isExitOnlyChain(toChain.chain)) {
+      return [];
+    }
+
     if (!(await this.isSourceTokenSupported(sourceToken, fromChain))) {
       return [];
     }
@@ -112,6 +121,14 @@ export class TBTCRoute<N extends Network>
         valid: false,
         params,
         error: new Error("Source and destination chains cannot be the same"),
+      };
+    }
+
+    if (TBTCRoute.isExitOnlyChain(request.toChain.chain)) {
+      return {
+        valid: false,
+        params,
+        error: new Error(`tBTC transfers to ${request.toChain.chain} are no longer supported`),
       };
     }
 
@@ -333,6 +350,10 @@ export class TBTCRoute<N extends Network>
     }
 
     yield receipt;
+  }
+
+  static isExitOnlyChain(chain: Chain): boolean {
+    return EXIT_ONLY_CHAINS.includes(chain);
   }
 
   static async isSourceTokenSupported<N extends Network>(
