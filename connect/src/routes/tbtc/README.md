@@ -2,4 +2,6 @@ The TBTCRoute enables the transfer of both native and Wormhole-wrapped Ethereum 
 
 Arbitrum, Base, Optimism, Polygon, and Solana have a gateway contract. This contract mints native TBTC when it receives a payload3 transfer of Wormhole-wrapped TBTC from the token bridge. Conversely, it burns native TBTC, unlocks and bridges Wormhole-wrapped TBTC through the token bridge when bridging out. Wormhole-wrapped TBTC serves as the "highway" asset for bridging TBTC between chains. Transfers of TBTC to chains without a gateway contract are regular token bridge transfers.
 
+Optimism and Polygon are exit-only: the route does not offer them as destinations, but still allows transfers out of them (burning native TBTC through the gateway, or sending Wormhole-wrapped TBTC through the token bridge). Transfers already in flight to these chains can still be completed; the gateway delivers Wormhole-wrapped TBTC instead of native TBTC once its minting limit is zero.
+
 You can view the EVM L2WormholeGateway contract code [here](https://docs.threshold.network/app-development/tbtc-v2/tbtc-contracts-api/tbtc-v2-api/l2wormholegateway). The Solana program is [here](https://github.com/keep-network/tbtc-v2/tree/main/cross-chain/solana).
